@@ -1,0 +1,8 @@
+# Projet canlii_pour_zotero : environnement et fichiers système
+.venv/
+__pycache__/
+.DS_Store
+# Clone du répertoire GitHub zotero/translators, versionné à part
+zotero-translators/
+# Consignes de travail, non publiées
+CLAUDE.md
