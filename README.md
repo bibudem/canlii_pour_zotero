@@ -18,7 +18,8 @@ Cette version reprend la [demande de fusion (pull request) #3678](https://github
 Changements apportés à cette base :
 
 - 2026-11-11 — décisions sans référence neutre : référence CanLII inscrite dans le champ **Tribunal** (ex. « CanLII 17741 (QC CS) »);
-- 2026-11-15 — documents de doctrine : PDF du texte intégral joint à la notice, à la place de la capture de la page.
+- 2026-11-15 — documents de doctrine : PDF du texte intégral joint à la notice, à la place de la capture de la page;
+- 2026-11-16 — lois et règlements : type de document « Acte juridique », avec le nom de l'acte, le code et le lien vers la dernière version.
 
 ## Installation sous Windows
 
@@ -37,6 +38,7 @@ Les libellés de l'étape 6 sont ceux de la version anglaise du connecteur.
 
 - Enregistrer avec le connecteur la décision [2000 CanLII 17741 (QC CS)](https://canlii.ca/t/1kg5g). Le champ **Tribunal** de la notice affiche « CanLII 17741 (QC CS) ».
 - Enregistrer avec le connecteur le document de doctrine [2025 CanLIIDocs 1985](https://www.canlii.org/fr/doctrine/doc/2025CanLIIDocs1985). La notice a une seule pièce jointe : le PDF « CanLII Full Text PDF ».
+- Enregistrer avec le connecteur le [Code criminel](https://canlii.ca/t/ckjd). La notice est de type « Acte juridique », et le champ **Code** affiche « LRC 1985, c C-46 ».
 
 ## Retrait
 

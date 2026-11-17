@@ -9,7 +9,7 @@
 	"inRepository": true,
 	"translatorType": 4,
 	"browserSupport": "gcsibv",
-	"lastUpdated": "2026-11-15 23:09:48"
+	"lastUpdated": "2026-11-16 21:40:53"
 }
 
 /*
@@ -39,6 +39,9 @@
 var canLiiRegexp = /^https?:\/\/(?:www\.)?canlii\.org\/(?:en|fr)\/[^/]+\/[^/]+\/doc\//;
 // Commentary documents, e.g. /fr/doctrine/doc/2025CanLIIDocs1985 or /en/commentary/doc/2025CanLIIDocs1985
 var commentaryRegexp = /^https?:\/\/(?:www\.)?canlii\.org\/(?:en\/commentary|fr\/doctrine)\/doc\/([^/?#]+)/;
+// Statutes and regulations, e.g. /fr/ca/legis/lois/lrc-1985-c-c-46/derniere/lrc-1985-c-c-46.html
+// or /en/qc/laws/regu/cqlr-c-a-29-r-1/latest/cqlr-c-a-29-r-1.html
+var legislationRegexp = /^https?:\/\/(?:www\.)?canlii\.org\/(?:fr\/[^/]+\/legis|en\/[^/]+\/laws)\/[^/]+\/[^/]+\/[^/]+\/[^/?#]+\.html/;
 
 function clean(value) {
 	return (value || "").replace(/\s+/g, " ").trim();
@@ -65,6 +68,7 @@ function detectWeb(doc, url) {
 	if (commentaryRegexp.test(url)) {
 		return meta(doc, "citation_journal_title") ? "journalArticle" : "document";
 	}
+	if (legislationRegexp.test(url)) return "statute";
 	if (canLiiRegexp.test(url)) return "case";
 	for (var link of doc.querySelectorAll("a[href]")) {
 		if (canLiiRegexp.test(link.href)) return "multiple";
@@ -144,9 +148,31 @@ async function scrapeCommentary(doc, url) {
 	await em.doWeb(doc, url);
 }
 
+function scrapeLegislation(doc, url) {
+	var item = new Zotero.Item("statute");
+	// The page title metadata reads "<code> | <name of act>",
+	// e.g. "LRC 1985, c C-46 | Code criminel".
+	var parts = meta(doc, "dc.title").split("|");
+	item.nameOfAct = meta(doc, "lbh-title") || clean(parts[parts.length - 1]);
+	if (parts.length > 1) item.code = clean(parts[0]);
+	// dc.language follows CanLII's interface language, not the language of the text.
+	var english = /^https?:\/\/(?:www\.)?canlii\.org\/en\//.test(url);
+	item.language = english ? "en" : "fr";
+	// Permalink to the latest version. Dated versions lack this row, so build
+	// the address of the latest version instead.
+	item.url = metadataValue(doc, ["lien vers la dernière version", "link to the latest version"])
+		|| url.replace(/\/[^/]+\/([^/?#]+\.html)(?:[?#].*)?$/, "/" + (english ? "latest" : "derniere") + "/$1");
+	// CanLII offers no PDF for legislation.
+	item.attachments.push({ document: doc, title: "CanLII Snapshot" });
+	item.complete();
+}
+
 async function doWeb(doc, url) {
 	if (commentaryRegexp.test(url)) {
 		await scrapeCommentary(doc, url);
+	}
+	else if (legislationRegexp.test(url)) {
+		scrapeLegislation(doc, url);
 	}
 	else if (canLiiRegexp.test(url)) {
 		scrape(doc, url);
@@ -503,6 +529,75 @@ var testCases = [
 					{
 						"title": "CanLII Full Text PDF",
 						"mimeType": "application/pdf"
+					}
+				],
+				"tags": [],
+				"notes": [],
+				"seeAlso": []
+			}
+		]
+	},
+	{
+		"type": "web",
+		"url": "https://www.canlii.org/fr/ca/legis/lois/lrc-1985-c-c-46/derniere/lrc-1985-c-c-46.html",
+		"items": [
+			{
+				"itemType": "statute",
+				"nameOfAct": "Code criminel",
+				"creators": [],
+				"code": "LRC 1985, c C-46",
+				"language": "fr",
+				"url": "https://canlii.ca/t/ckjd",
+				"attachments": [
+					{
+						"title": "CanLII Snapshot",
+						"mimeType": "text/html"
+					}
+				],
+				"tags": [],
+				"notes": [],
+				"seeAlso": []
+			}
+		]
+	},
+	{
+		"type": "web",
+		"url": "https://www.canlii.org/fr/qc/legis/regl/rlrq-c-a-29-r-1/derniere/rlrq-c-a-29-r-1.html",
+		"items": [
+			{
+				"itemType": "statute",
+				"nameOfAct": "Règlement sur l'admissibilité et l'inscription des personnes auprès de la Régie de l'assurance maladie du Québec",
+				"creators": [],
+				"code": "RLRQ c A-29, r 1",
+				"language": "fr",
+				"url": "https://canlii.ca/t/ch8d",
+				"attachments": [
+					{
+						"title": "CanLII Snapshot",
+						"mimeType": "text/html"
+					}
+				],
+				"tags": [],
+				"notes": [],
+				"seeAlso": []
+			}
+		]
+	},
+	{
+		"type": "web",
+		"url": "https://www.canlii.org/en/ca/laws/stat/rsc-1985-c-c-46/latest/rsc-1985-c-c-46.html",
+		"items": [
+			{
+				"itemType": "statute",
+				"nameOfAct": "Criminal Code",
+				"creators": [],
+				"code": "RSC 1985, c C-46",
+				"language": "en",
+				"url": "https://canlii.ca/t/7vf2",
+				"attachments": [
+					{
+						"title": "CanLII Snapshot",
+						"mimeType": "text/html"
 					}
 				],
 				"tags": [],
